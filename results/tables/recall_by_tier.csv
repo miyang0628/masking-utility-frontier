@@ -1,0 +1,6 @@
+tier,recall,leakage,precision,sensitive_total,sensitive_caught
+C0,0.0,1.0,1.0,900,0
+C1,1.0,0.0,1.0,900,900
+C2,1.0,0.0,1.0,900,900
+C3,1.0,0.0,1.0,900,900
+C4,1.0,0.0,1.0,900,900
