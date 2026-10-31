@@ -1,0 +1,13 @@
+model,scoring,stratum,recovery,n
+weak,exact,rare,0.13314447592067988,353
+weak,exact,common,0.15639810426540285,211
+weak,semantic,rare,0.18696883852691218,353
+weak,semantic,common,0.16587677725118483,211
+mid,exact,rare,0.2804532577903683,353
+mid,exact,common,0.4075829383886256,211
+mid,semantic,rare,0.39660056657223797,353
+mid,semantic,common,0.4265402843601896,211
+strong,exact,rare,0.5524079320113314,353
+strong,exact,common,0.8009478672985783,211
+strong,semantic,rare,0.660056657223796,353
+strong,semantic,common,0.8578199052132701,211

@@ -1,0 +1,4 @@
+model,non_dominated_tiers
+weak,"C1,C2"
+mid,"C1,C2,C3,C4"
+strong,"C1,C2,C3,C4"

@@ -1,0 +1,6 @@
+tier,recall,leakage,precision,sensitive_total,sensitive_caught,context_retention,task_success_proxy,reversible,risk_weak,risk_weak_lo,risk_weak_hi,risk_mid,risk_mid_lo,risk_mid_hi,risk_strong,risk_strong_lo,risk_strong_hi,reconstruction_risk,reconstruction_risk_lo,reconstruction_risk_hi,mode,n_adv_files,compliant
+C0,0.0,1.0,1.0,900,0,1.0,0.964428810727364,True,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,parametric,50,False
+C1,1.0,0.0,1.0,900,900,1.0,0.964428810727364,True,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,parametric,50,True
+C2,1.0,0.0,1.0,900,900,0.55,0.6456563062257955,True,0.315,0.315,0.315,0.405,0.405,0.405,0.45,0.45,0.45,0.405,0.405,0.405,parametric,50,True
+C3,1.0,0.0,1.0,900,900,0.3,0.289050497374996,True,0.0839999999999999,0.0839999999999999,0.0839999999999999,0.108,0.108,0.108,0.12,0.12,0.12,0.108,0.108,0.108,parametric,50,True
+C4,1.0,0.0,1.0,900,900,0.3,0.289050497374996,False,0.0209999999999999,0.0209999999999999,0.0209999999999999,0.027,0.027,0.027,0.03,0.03,0.03,0.027,0.027,0.027,parametric,50,True
