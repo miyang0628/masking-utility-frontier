@@ -21,10 +21,14 @@ and equivalence tests and 95% bootstrap CIs:
   strong one — established by paired tests, not overlapping CIs.
 - **Most apparent leakage is memorization.** A decontamination ladder (near-match scored) shows strong-adversary
   reconstruction falling from **0.75** on the memorized public carrier, to **0.18** under meaning-preserving renaming,
-  to **0.006** on a **synthetic non-memorized carrier** — a memorization share of **~99%**. On genuinely novel code,
-  identifier masking is therefore **highly protective**; masking is still not sufficient alone, but because of two
-  channels it does not touch — memorization of public-analogue code and exposure of logic/structure (not identifier
-  names) — so the binding complements are contractual and architectural, not heavier masking.
+  to **0.006–0.03** on non-memorized synthetic carriers (0.006 for a simple carrier, 0.029 for a structurally richer
+  one) — a memorization share of **~96–99%**. On genuinely novel code, identifier masking is therefore
+  **highly protective**; masking is still not sufficient alone, but because of two channels it does not touch —
+  memorization of public-analogue code and exposure of logic/structure (not identifier names) — so the binding
+  complements are contractual and architectural, not heavier masking.
+- **Utility ordering is empirically grounded.** A structural-token retention measurement reproduces the stipulated
+  utility ordering (Spearman ρ = 0.97; C2 > C3 paired, Wilcoxon *p* < 1e-25), confirming the frontier's ordering is not
+  an artifact of the chosen weights while showing the cardinal spacing is indicative only.
 - **Methodological caution.** LLM-reconstruction measurements on *public* code overstate leakage by a large factor;
   within-corpus cross-tier comparisons are robust to this, but absolute exposure must be decontaminated.
 
@@ -55,16 +59,25 @@ and equivalence tests and 95% bootstrap CIs:
 | 07 | `pareto_all_adversaries` | no | ✅ | per-adversary frontier / non-dominated set |
 | 08 | `recall_stress_test` | no | ✅ | difficulty-stratified recall + distractor precision |
 | 09 | `llm_extensions` | **yes** | ✅ | contamination probe, semantic/rarity re-scoring, k=5 robustness, meaning-preserving decon, Python replication |
-| 10 | `private_decontamination` | **yes** | ⬜ **not run** | *optional* — reconstruction on a user-supplied **private** carrier |
-| 11 | `synthetic_novel_carrier` | **yes** | ✅ | reconstruction on a **generated non-memorized** carrier (the clean decontamination result) |
+| 10 | `synthetic_novel_carrier` | **yes** | ✅ | reconstruction on a **generated non-memorized** carrier (the clean decontamination result, strong ≈ 0.006) |
+| 11 | `utility_validation` | no | ✅ | measured structural-token retention; validates the utility-proxy *ordering* (Spearman ρ = 0.97) |
+| 12 | `cross_vendor_robustness` | **yes** | ⬜ partial | re-runs reconstruction + verbatim-memorization probe per vendor (OpenAI run reported; other vendors need keys) |
+| 13 | `realistic_nonmemorized_carrier` | **yes** | ✅ | tightens the non-memorized bracket with a **structurally richer** synthetic carrier (strong ≈ 0.029) and an optional **private** carrier (`PRIVATE_DIR`) |
 
-**On notebooks 10 vs 11.** Both target the same question — reconstruction on *non-memorized* code — but by different
-means. Notebook 10 requires the user to point `PRIVATE_DIR` at a genuinely novel, non-sensitive private codebase, and
-**was not run here** because no suitable private carrier was available. Notebook 11 instead **generates** a non-memorized
-carrier (a logistics-domain corpus with meaningful compound identifiers), so novelty is guaranteed *by construction*;
-**this is the notebook that produced the decontamination result reported in the paper** (synthetic strong-adversary
-recovery ≈ 0.006). Notebook 10 is retained as an alternative for anyone who can supply real private code and wants to
-tighten the estimate toward production-like complexity.
+**On the non-memorized carriers (nb 10 and nb 13).** Both measure reconstruction on *non-memorized* code, which is
+the clean signal for novel proprietary code. Notebook 10 generates a simple non-memorized carrier (logistics domain,
+compound identifiers) and gives strong-adversary recovery ≈ 0.006. Because that carrier is simpler than real code and
+may *understate* reconstruction, notebook 13 adds a **structurally richer** synthetic carrier (multi-method classes
+with cross-method calls and shared fields) that raises recovery to ≈ 0.029 — still low, and tightening the
+non-memorized bracket to **[0.006, 0.03]**. Notebook 13 also accepts a genuinely **private** carrier (set
+`PRIVATE_DIR`) for anyone who can supply real, never-published code and wants to push the estimate toward
+production-like complexity; the private path was **not run in this study** (no suitable private carrier available).
+
+**On cross-vendor robustness (nb 12).** The adversary in the paper is one vendor family (OpenAI
+gpt-4o-mini / gpt-5.4-mini / gpt-5.4). Notebook 12 re-runs the two key measurements (identifier reconstruction at
+C2–C4 and the verbatim-memorization probe) for any vendor whose key is set, so the OpenAI finding can be checked
+against Anthropic and/or Google models. Only the OpenAI run is reported; a full cross-vendor replication is left to
+future work.
 
 ## Reproduce
 
@@ -74,42 +87,52 @@ Requires Python 3.10+.
 pip install -r requirements.txt
 ```
 
-Run in order; the no-LLM notebooks (01, 02, 04–08, and the generators) reproduce deterministically (`seed = 42`):
+Run in order; the no-LLM notebooks (01, 02, 04–08, 11, and the generators) reproduce deterministically (`seed = 42`):
 
 ```
 # no API key needed
 jupyter nbconvert --to notebook --execute --inplace notebooks/01_generate_synthetic_corpus.ipynb
 jupyter nbconvert --to notebook --execute --inplace notebooks/02_masking_and_recall.ipynb
-# ... 04–08 similarly
+# ... 04–08, 11 similarly
 ```
 
-For the live-LLM notebooks (03, 09, 11, and optionally 10), set a key in `.env` (see below) and run them after 01–02.
+For the live-LLM notebooks (03, 09, 10, 12, 13), set a key in `.env` (see below) and run them after 01–02.
 Model responses are cached on disk (`data/_adv_cache/`), so re-runs are deterministic and free.
 
 - **Notebook 01 needs network on first run** to fetch the pinned upstream carrier; cached afterward.
-- **Notebook 11 needs only an API key** (no private code); it generates its own non-memorized carrier.
+- **Notebooks 10 and 13 need only an API key** (no private code); they generate their own non-memorized carriers.
+  Notebook 13's private path additionally needs `PRIVATE_DIR` pointed at your own never-published code.
+- **Notebook 11 needs no key**: it measures structural-token retention from the masked corpus produced by nb 02.
 
 ## Carriers
 
 - **Public (main):** Apache Fineract (`apache/fineract`, Apache-2.0), pinned at commit
   `e0ae48b391ab1b31b597e5fcaeee4a4419e1841a`; fetched at run time, **not redistributed** here.
-- **Synthetic (non-memorized, nb 11):** generated logistics-domain code, novel by construction, used to measure
-  reconstruction free of memorization.
+- **Synthetic, simple (nb 10):** generated logistics-domain code, novel by construction; strong recovery ≈ 0.006.
+- **Synthetic, richer (nb 13):** multi-method classes with cross-calls and shared fields; strong recovery ≈ 0.029.
+- **Private (nb 13, optional, not run):** a user-supplied never-published codebase via `PRIVATE_DIR`.
 - **Python (nb 09, P8):** a public Python repo, for a cross-language robustness check (N=15, underpowered).
 
 ## Live-LLM configuration (`.env` at the repo root)
 
 ```
+# ---- OpenAI (the paper's adversary family) ----
 OPENAI_API_KEY=sk-...          # leave as None to use the parametric fallback (nb 03 only)
 LLM_MODEL_WEAK=gpt-4o-mini
 LLM_MODEL_MID=gpt-5.4-mini
 LLM_MODEL_STRONG=gpt-5.4
-# notebook 11 (synthetic): optional
+
+# ---- Cross-vendor (nb 12), optional ----
+ANTHROPIC_API_KEY=
+ANTHROPIC_MODEL_STRONG=claude-sonnet-4-5
+GOOGLE_API_KEY=
+GOOGLE_MODEL_STRONG=gemini-2.5-pro
+
+# ---- Synthetic / private carriers (nb 10, nb 13) ----
 SYN_LANG=java                  # or python
 SYN_N=40
-# notebook 10 (private, optional/not run): required to enable it
-# PRIVATE_DIR=/absolute/path/to/novel/non-sensitive/code
-# PRIVATE_LANG=java
+ADV_PROVIDER=openai            # nb 13: which vendor to use as the strong adversary
+# PRIVATE_DIR=/absolute/path/to/novel/non-sensitive/code   # nb 13 private path (optional)
 ```
 
 Copy `.env.example` to `.env` and fill in the key. **`.env` is gitignored; never commit a real key.**
@@ -119,19 +142,24 @@ Copy `.env.example` to `.env` and fill in the key. **`.env` is gitignored; never
 **No real or proprietary sensitive data is used.** Injected sensitive tokens are randomly generated; where a format
 carries a checksum (card via Luhn, resident-registration number), the checksum is valid only so detectors can be
 exercised. No value corresponds to any real person, account, card, or credential. The public carrier is open source;
-the synthetic carrier is generated and never existed.
+the synthetic carriers are generated and never existed.
 
 ## Scope and limitations
 
-- Utility is a **deterministic policy index** (retained structure), not a measured task-success rate; conclusions from
-  it are ordinal.
+- Utility is a **deterministic policy index** (retained structure); its *ordering* is validated against a measured
+  structural-token retention signal (nb 11, Spearman ρ = 0.97), but its cardinal spacing is indicative, not a measured
+  task-success rate. Conclusions from it are read ordinally.
 - Reconstruction is measured at the **identifier (lexical) level**, a lower bound on knowledge exposure — logic, control
-  flow, and types remain visible at reversible tiers regardless of identifier recovery.
-- Absolute reconstruction on the **public** carrier is inflated by memorization; the **synthetic** carrier removes this
-  but is simpler than production code and so may *understate* reconstruction. Novel-code reconstruction is therefore
-  reported as a bracket **[0.006, 0.18]** for the strong adversary; a non-memorized carrier closer to real proprietary
-  code is the one remaining measurement.
-- Figures are specific to one vendor family and the carriers used, not a general property of LLMs.
+  flow, and types remain visible at reversible tiers regardless of identifier recovery (structural retention stays
+  ~94.5% even at C3).
+- Absolute reconstruction on the **public** carrier is inflated by memorization; the **synthetic** carriers remove this.
+  The simple carrier (nb 10) may *understate* reconstruction; the richer carrier (nb 13) raises it to ≈ 0.029, so
+  novel-code reconstruction is reported as a bracket **[0.006, 0.03]** for the strong adversary on realistic carriers
+  (up to 0.18 under the conservative meaning-preserving estimate). A genuinely private production carrier (nb 13
+  `PRIVATE_DIR`) is the one remaining measurement.
+- The adversary is a **single vendor family**; a cross-vendor replication (nb 12) is provided but only the OpenAI run is
+  reported. Memorization of training data is a documented property across LLM families, so the *direction* is expected
+  to recur, but absolute magnitudes are vendor-specific and untested here.
 
 ## License
 
